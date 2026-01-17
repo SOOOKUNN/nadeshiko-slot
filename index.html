@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KAZINO</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            background: #f0f0f0;
+            font-family: 'MS Gothic', monospace;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .main-form {
+            width: 1500px;
+            height: 1000px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(var(--scale));
+            background: #fff;
+            will-change: transform;
+        }
+
+        #money-panel {
+            position: absolute;
+            left: 50px;
+            top: 50px;
+            width: 600px;
+            height: 100px;
+            font-size: 50px;
+            border: 2px solid #000;
+            text-align: center;
+            line-height: 100px;
+            background: #fff;
+        }
+
+        .slot {
+            position: absolute;
+            width: 150px;
+            height: 250px;
+            font-size: 150px;
+            border: 2px solid #000;
+            text-align: center;
+            line-height: 250px;
+            background: #fff;
+            color: #000;
+            will-change: contents;
+        }
+
+        #slot0 { left: 125px; top: 400px; }
+        #slot1 { left: 390px; top: 400px; }
+        #slot2 { left: 635px; top: 400px; }
+
+        #entry-fee {
+            position: absolute;
+            left: 550px;
+            top: 650px;
+            width: 400px;
+            height: 150px;
+            font-size: 28px;
+            border: 2px solid #000;
+            text-align: center;
+            line-height: 150px;
+            background: #fff;
+        }
+
+        #description {
+            position: absolute;
+            left: 1000px;
+            top: 200px;
+            width: 500px;
+            height: 800px;
+            font-size: 18px;
+            border: 2px solid #000;
+            padding: 10px;
+            background: #fff;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        #btn-spin {
+            position: absolute;
+            left: 175px;
+            top: 700px;
+            width: 600px;
+            height: 250px;
+            font-size: 150px;
+            background: #e0e0e0;
+            border: 3px outset #999;
+            cursor: pointer;
+            font-family: 'MS Gothic', monospace;
+            transition: none;
+        }
+
+        #btn-spin:active {
+            border-style: inset;
+        }
+
+        #btn-777 {
+            position: absolute;
+            left: 1100px;
+            top: 900px;
+            width: 300px;
+            height: 50px;
+            font-size: 28px;
+            background: #e0e0e0;
+            border: 3px outset #999;
+            cursor: pointer;
+            font-family: 'MS Gothic', monospace;
+        }
+
+        #btn-777:active {
+            border-style: inset;
+        }
+
+        #popup {
+            position: absolute;
+            font-size: 50px;
+            font-weight: bold;
+            pointer-events: none;
+            white-space: nowrap;
+            transform: translateZ(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-form">
+        <div id="money-panel">100000円</div>
+        <div id="slot0" class="slot"></div>
+        <div id="slot1" class="slot"></div>
+        <div id="slot2" class="slot"></div>
+        <div id="entry-fee">参加料は10000円です</div>
+        <div id="description">説明文
+・到達レベル
+1段階：所持金100000未満　参加料1000円
+2段階：所持金100000以上　参加料10000円
+3段階：所持金10000000以上　参加料1000000円
+4段階：所持金100000000以上　参加料10000000円
+・評価
+大当たり：３つの数字がそろったとき　その数字×持ち金（１の時は100000円）
+当たり：２つの数字がそろったとき　最小200円最大4000円
+はずれ：すべてばらばらの数字のとき　最小0円最大2000円
+　　
+所持金10000000以上になると結果が7倍されるようになります。</div>
+        <button id="btn-spin">押せ!!</button>
+        <button id="btn-777">777確定ボタン</button>
+        <div id="popup"></div>
+    </div>
+
+    <script>
+        'use strict';
+
+        // レスポンシブスケール調整（デバウンス付き）
+        let resizeTimer;
+        function adjustScale() {
+            const scaleX = window.innerWidth / 1500;
+            const scaleY = window.innerHeight / 1000;
+            const scale = Math.min(scaleX, scaleY, 1);
+            document.documentElement.style.setProperty('--scale', scale);
+        }
+        
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(adjustScale, 100);
+        });
+        adjustScale();
+
+        // 変数
+        let M = 100000;
+        let isSpinning = false;
+
+        // 要素取得（キャッシュ）
+        const el = {
+            moneyPanel: document.getElementById('money-panel'),
+            slots: [
+                document.getElementById('slot0'),
+                document.getElementById('slot1'),
+                document.getElementById('slot2')
+            ],
+            entryFee: document.getElementById('entry-fee'),
+            btnSpin: document.getElementById('btn-spin'),
+            btn777: document.getElementById('btn-777'),
+            popup: document.getElementById('popup')
+        };
+
+        // ユーティリティ関数（最適化版）
+        const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+        const random = max => (Math.random() * max | 0) + 1;
+
+        // ポップアップ表示（requestAnimationFrame使用）
+        async function showPopup(text, color, x, y, duration = 30) {
+            el.popup.style.color = color;
+            el.popup.style.left = x + 'px';
+            el.popup.textContent = text;
+            
+            let frame = 0;
+            const animate = () => {
+                if (frame >= duration) {
+                    el.popup.textContent = '';
+                    return;
+                }
+                el.popup.style.top = (y + frame) + 'px';
+                frame++;
+                requestAnimationFrame(animate);
+            };
+            
+            requestAnimationFrame(animate);
+            await sleep(duration * 10);
+        }
+
+        // 参加料計算（インライン最適化）
+        const getEntryFee = () => 
+            M > 99999999 ? 10000000 :
+            M > 9999999 ? 1000000 :
+            M > 99999 ? 10000 : 1000;
+
+        // スロット回転アニメーション（最適化版）
+        async function spinAnimation(is777 = false) {
+            let S = 0, T = 0, T1 = 0, T2 = 0;
+            let Text = 'ゴ', TextC = 0;
+
+            el.btnSpin.style.fontSize = '75px';
+
+            // バッチ更新用の配列
+            const results = [0, 0, 0];
+
+            while (S < 30) {
+                results[0] = random(7);
+                results[1] = random(7);
+                results[2] = random(7);
+
+                // DOM更新を最小化
+                if (S > 25) {
+                    await sleep(T * 1000);
+                    el.slots[0].textContent = results[0];
+                    await sleep(T1 * 1000);
+                    el.slots[1].textContent = results[1];
+                    await sleep(T2 * 1000);
+                    el.slots[2].textContent = results[2];
+                    
+                    T += 0.01;
+                    T1 += 0.05;
+                    T2 += 0.1;
+                } else {
+                    el.slots[0].textContent = results[0];
+                    el.slots[1].textContent = results[1];
+                    el.slots[2].textContent = results[2];
+                }
+
+                S++;
+
+                Text += 'ガ…';
+                el.btnSpin.textContent = Text;
+                TextC++;
+                if (TextC > 9) {
+                    Text = '';
+                    TextC = 0;
+                }
+
+                await sleep(25);
+            }
+
+            if (is777) {
+                el.slots[0].textContent = '7';
+                el.slots[1].textContent = '7';
+                el.slots[2].textContent = '7';
+                return [7, 7, 7];
+            }
+
+            return results;
+        }
+
+        // 点滅演出（最適化版）
+        async function blinkSlots() {
+            const colors = ['#ff0000', '#0000ff', '#ffff00', '#000000'];
+            for (let i = 0; i < 3; i++) {
+                for (const color of colors) {
+                    // バッチ更新
+                    el.slots[0].style.color = color;
+                    el.slots[1].style.color = color;
+                    el.slots[2].style.color = color;
+                    await sleep(200);
+                }
+            }
+        }
+
+        // 結果判定（最適化版）
+        async function judgeResult(a, b, c) {
+            let MT = 0;
+
+            // 3つ揃い
+            if (a === b && b === c) {
+                MT = a === 1 ? 100000 : M * a - M;
+                await blinkSlots();
+            }
+            // 2つ揃い・ハズレ
+            else {
+                const key = a === b ? a : b === c ? b : a === c ? a : 0;
+
+                if (key > 0) {
+                    const prizes = [0, 200, 500, 1000, 1500, 2000, 3000, 4000];
+                    MT = prizes[key] || 4000;
+                } else {
+                    const p = a + b + c;
+                    MT = p <= 10 ? 0 :
+                         p <= 27 ? 50 :
+                         p <= 49 ? 100 :
+                         p <= 80 ? 200 :
+                         p <= 120 ? 500 :
+                         p <= 180 ? 1000 : 2000;
+                }
+            }
+
+            M += MT;
+            el.moneyPanel.textContent = M + '円';
+
+            // マネーポップアップ
+            await showPopup(
+                (MT < 0 ? '' : '+') + MT + '円',
+                '#ff0000', 650, 30, 30
+            );
+        }
+
+        // メインスピン処理
+        async function mainSpin(is777 = false) {
+            if (isSpinning) return;
+            isSpinning = true;
+
+            const Mpop = getEntryFee();
+            M -= Mpop;
+            el.moneyPanel.textContent = M + '円';
+            el.entryFee.textContent = '参加料は' + Mpop + '円です';
+
+            await showPopup('-' + Mpop + '円', '#0067c0', 650, 10, 30);
+
+            const results = await spinAnimation(is777);
+            await judgeResult(...results);
+
+            await sleep(1000);
+            el.btnSpin.style.fontSize = '150px';
+            el.btnSpin.textContent = '押せ!!';
+            isSpinning = false;
+        }
+
+        // イベント設定（パッシブリスナー）
+        el.btnSpin.addEventListener('click', () => mainSpin(false), { passive: true });
+        el.btn777.addEventListener('click', () => mainSpin(true), { passive: true });
+
+        // キーボード操作
+        let keyPressed = false;
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !isSpinning && !keyPressed) {
+                e.preventDefault();
+                keyPressed = true;
+                mainSpin(false);
+            }
+        }, { passive: false });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.code === 'Space') {
+                keyPressed = false;
+            }
+        }, { passive: true });
+
+        // メモリリーク防止
+        window.addEventListener('beforeunload', () => {
+            clearTimeout(resizeTimer);
+        });
+    </script>
+</body>
+</html>
