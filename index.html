@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="なでしこv1スロットゲームのWeb版。壁紙としても楽しめるカジノスロットゲーム">
     <meta name="keywords" content="スロット,ゲーム,なでしこ,壁紙,KAZINO">
     <meta name="author" content="Nadeshiko Slot Game">
@@ -13,54 +13,120 @@
     <title>KAZINO - なでしこスロットゲーム</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        body{width:100vw;height:100vh;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);font-family:'MS Gothic','Courier New',monospace;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center}
+        body{width:100vw;min-height:100vh;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);font-family:'MS Gothic','Courier New',monospace;overflow-x:hidden;position:relative;display:flex;align-items:center;justify-content:center;padding:10px}
         @keyframes gradient{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
         body::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(45deg,transparent 30%,rgba(255,215,0,0.05)50%,transparent 70%);background-size:200% 200%;animation:gradient 15s ease infinite;pointer-events:none}
-        .container{width:min(1400px,95vw);height:min(900px,95vh);display:grid;grid-template-columns:1fr 400px;grid-template-rows:auto 1fr auto;gap:20px;padding:30px;background:rgba(255,255,255,0.98);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.5);backdrop-filter:blur(10px)}
-        .header{grid-column:1/-1;text-align:center}
-        .title{font-size:3.5em;font-weight:bold;color:#1a1a2e;text-shadow:3px 3px 6px rgba(0,0,0,0.2);margin-bottom:10px}
-        .money-display{display:inline-block;padding:20px 60px;background:linear-gradient(145deg,#ffd700,#ffed4e);border:4px solid #b8860b;border-radius:15px;font-size:2.5em;font-weight:bold;color:#1a1a2e;box-shadow:0 8px 20px rgba(255,215,0,0.4);margin-top:10px}
-        .game-area{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:30px;background:linear-gradient(145deg,#f8f9fa,#e9ecef);border-radius:15px;padding:40px;box-shadow:inset 0 4px 10px rgba(0,0,0,0.1)}
-        .slots-container{display:flex;gap:30px;justify-content:center}
-        .slot{width:180px;height:180px;font-size:120px;border:5px solid #000;border-radius:20px;text-align:center;line-height:180px;background:linear-gradient(145deg,#fff,#f0f0f0);box-shadow:inset 0 6px 15px rgba(0,0,0,0.15),0 8px 20px rgba(0,0,0,0.3);color:#000;font-weight:bold;will-change:transform}
+        
+        /* コンテナ - デスクトップ */
+        .container{width:100%;max-width:1400px;background:rgba(255,255,255,0.98);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.5);backdrop-filter:blur(10px);padding:20px;margin:auto}
+        
+        /* ヘッダー */
+        .header{text-align:center;margin-bottom:20px}
+        .title{font-size:clamp(1.8em,5vw,3.5em);font-weight:bold;color:#1a1a2e;text-shadow:3px 3px 6px rgba(0,0,0,0.2);margin-bottom:10px}
+        .money-display{display:inline-block;padding:clamp(10px,3vw,20px) clamp(20px,5vw,60px);background:linear-gradient(145deg,#ffd700,#ffed4e);border:4px solid #b8860b;border-radius:15px;font-size:clamp(1.5em,4vw,2.5em);font-weight:bold;color:#1a1a2e;box-shadow:0 8px 20px rgba(255,215,0,0.4);margin-top:10px}
+        
+        /* メインコンテンツエリア */
+        .main-content{display:flex;gap:20px;flex-wrap:wrap}
+        
+        /* ゲームエリア */
+        .game-area{flex:1;min-width:300px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:20px;background:linear-gradient(145deg,#f8f9fa,#e9ecef);border-radius:15px;padding:clamp(20px,4vw,40px);box-shadow:inset 0 4px 10px rgba(0,0,0,0.1)}
+        
+        .slots-container{display:flex;gap:clamp(10px,3vw,30px);justify-content:center;flex-wrap:wrap}
+        .slot{width:clamp(80px,20vw,180px);height:clamp(80px,20vw,180px);font-size:clamp(50px,12vw,120px);border:5px solid #000;border-radius:20px;text-align:center;line-height:clamp(80px,20vw,180px);background:linear-gradient(145deg,#fff,#f0f0f0);box-shadow:inset 0 6px 15px rgba(0,0,0,0.15),0 8px 20px rgba(0,0,0,0.3);color:#000;font-weight:bold;will-change:transform}
         .slot.spinning{animation:slotSpin 0.1s infinite}
         @keyframes slotSpin{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-        .entry-fee-display{padding:15px 40px;background:linear-gradient(145deg,#fff3cd,#ffe69c);border:3px solid #ffc107;border-radius:10px;font-size:1.5em;font-weight:bold;color:#856404;box-shadow:0 4px 10px rgba(0,0,0,0.15)}
-        .controls{display:flex;gap:20px;margin-top:10px}
-        .btn-spin{padding:30px 80px;font-size:3em;background:linear-gradient(145deg,#28a745,#34ce57);border:5px outset #1e7e34;border-radius:15px;cursor:pointer;font-family:inherit;font-weight:bold;color:#fff;box-shadow:0 10px 25px rgba(40,167,69,0.4);transition:transform 0.2s,box-shadow 0.2s;text-shadow:2px 2px 4px rgba(0,0,0,0.3)}
-        .btn-spin:hover{transform:translateY(-5px);box-shadow:0 15px 35px rgba(40,167,69,0.6)}
+        
+        .entry-fee-display{padding:clamp(10px,2vw,15px) clamp(20px,4vw,40px);background:linear-gradient(145deg,#fff3cd,#ffe69c);border:3px solid #ffc107;border-radius:10px;font-size:clamp(1em,2.5vw,1.5em);font-weight:bold;color:#856404;box-shadow:0 4px 10px rgba(0,0,0,0.15);text-align:center}
+        
+        .controls{display:flex;gap:15px;margin-top:10px;flex-wrap:wrap;justify-content:center}
+        .btn-spin{padding:clamp(15px,3vw,30px) clamp(40px,6vw,80px);font-size:clamp(1.8em,4vw,3em);background:linear-gradient(145deg,#28a745,#34ce57);border:5px outset #1e7e34;border-radius:15px;cursor:pointer;font-family:inherit;font-weight:bold;color:#fff;box-shadow:0 10px 25px rgba(40,167,69,0.4);transition:transform 0.2s,box-shadow 0.2s;text-shadow:2px 2px 4px rgba(0,0,0,0.3);touch-action:manipulation}
+        .btn-spin:hover,.btn-spin:active{transform:translateY(-5px);box-shadow:0 15px 35px rgba(40,167,69,0.6)}
         .btn-spin:active{border-style:inset;transform:translateY(0)}
-        .btn-777{padding:20px 40px;font-size:1.3em;background:linear-gradient(145deg,#ff6b6b,#ee5a6f);border:4px outset #c92a2a;border-radius:10px;cursor:pointer;font-family:inherit;font-weight:bold;color:#fff;box-shadow:0 6px 15px rgba(255,107,107,0.4);transition:transform 0.2s,box-shadow 0.2s}
-        .btn-777:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(255,107,107,0.6)}
+        
+        .btn-777{padding:clamp(12px,2.5vw,20px) clamp(25px,4vw,40px);font-size:clamp(1em,2vw,1.3em);background:linear-gradient(145deg,#ff6b6b,#ee5a6f);border:4px outset #c92a2a;border-radius:10px;cursor:pointer;font-family:inherit;font-weight:bold;color:#fff;box-shadow:0 6px 15px rgba(255,107,107,0.4);transition:transform 0.2s,box-shadow 0.2s;touch-action:manipulation}
+        .btn-777:hover,.btn-777:active{transform:translateY(-3px);box-shadow:0 8px 20px rgba(255,107,107,0.6)}
         .btn-777:active{border-style:inset;transform:translateY(0)}
-        .sidebar{background:linear-gradient(145deg,#fff,#f8f9fa);border:3px solid #dee2e6;border-radius:15px;padding:25px;overflow-y:auto;box-shadow:0 4px 15px rgba(0,0,0,0.1)}
-        .sidebar h2{font-size:1.8em;color:#1a1a2e;margin-bottom:15px;border-bottom:3px solid #ffd700;padding-bottom:10px}
-        .sidebar-content{font-size:1.1em;line-height:1.8;color:#2c3e50}
-        .sidebar-content h3{color:#0f3460;margin-top:20px;margin-bottom:10px;font-size:1.3em}
-        .sidebar-content ul{margin-left:20px;margin-bottom:15px}
-        .sidebar-content li{margin-bottom:8px}
-        .sidebar::-webkit-scrollbar{width:10px}
+        
+        /* サイドバー */
+        .sidebar{flex:0 0 350px;background:linear-gradient(145deg,#fff,#f8f9fa);border:3px solid #dee2e6;border-radius:15px;padding:20px;overflow-y:auto;box-shadow:0 4px 15px rgba(0,0,0,0.1);max-height:600px}
+        .sidebar h2{font-size:clamp(1.3em,3vw,1.8em);color:#1a1a2e;margin-bottom:15px;border-bottom:3px solid #ffd700;padding-bottom:10px}
+        .sidebar-content{font-size:clamp(0.9em,2vw,1.1em);line-height:1.8;color:#2c3e50}
+        .sidebar-content h3{color:#0f3460;margin-top:15px;margin-bottom:8px;font-size:clamp(1em,2.2vw,1.3em)}
+        .sidebar-content ul{margin-left:20px;margin-bottom:12px}
+        .sidebar-content li{margin-bottom:6px}
+        .sidebar::-webkit-scrollbar{width:8px}
         .sidebar::-webkit-scrollbar-thumb{background:#adb5bd;border-radius:5px}
-        .footer{grid-column:1/-1;text-align:center;padding:15px;background:linear-gradient(145deg,#e9ecef,#dee2e6);border-radius:10px;font-size:0.95em;color:#495057}
-        .sound-toggle,.bgm-toggle{position:absolute;top:20px;padding:10px 20px;border:2px solid;border-radius:8px;cursor:pointer;font-size:1.1em;font-weight:bold;color:#fff;box-shadow:0 4px 10px rgba(0,0,0,0.2);transition:transform 0.2s,box-shadow 0.2s}
-        .sound-toggle{right:180px;background:linear-gradient(145deg,#6c757d,#5a6268);border-color:#495057}
-        .bgm-toggle{right:20px;background:linear-gradient(145deg,#17a2b8,#138496);border-color:#117a8b}
-        .sound-toggle:hover,.bgm-toggle:hover{transform:translateY(-2px);box-shadow:0 6px 15px rgba(0,0,0,0.3)}
+        
+        /* フッター */
+        .footer{text-align:center;padding:15px;background:linear-gradient(145deg,#e9ecef,#dee2e6);border-radius:10px;font-size:clamp(0.75em,1.8vw,0.95em);color:#495057;margin-top:20px}
+        
+        /* 音声トグルボタン */
+        .sound-controls{position:fixed;top:10px;right:10px;display:flex;gap:10px;z-index:1000;flex-direction:column}
+        .sound-toggle,.bgm-toggle{padding:8px 15px;border:2px solid;border-radius:8px;cursor:pointer;font-size:clamp(0.8em,2vw,1.1em);font-weight:bold;color:#fff;box-shadow:0 4px 10px rgba(0,0,0,0.2);transition:transform 0.2s,box-shadow 0.2s;touch-action:manipulation}
+        .sound-toggle{background:linear-gradient(145deg,#6c757d,#5a6268);border-color:#495057}
+        .bgm-toggle{background:linear-gradient(145deg,#17a2b8,#138496);border-color:#117a8b}
+        .sound-toggle:hover,.bgm-toggle:hover,.sound-toggle:active,.bgm-toggle:active{transform:translateY(-2px);box-shadow:0 6px 15px rgba(0,0,0,0.3)}
         .sound-toggle.muted,.bgm-toggle.muted{background:linear-gradient(145deg,#dc3545,#c82333);border-color:#bd2130}
-        #popup{position:fixed;font-size:3.5em;font-weight:bold;pointer-events:none;white-space:nowrap;transform:translateZ(0);z-index:10000;padding:20px 50px;border-radius:20px;border:5px solid transparent;background:transparent;opacity:0;display:none;transition:opacity 0.5s}
+        
+        /* ポップアップ */
+        #popup{position:fixed;font-size:clamp(1.5em,5vw,3.5em);font-weight:bold;pointer-events:none;white-space:nowrap;transform:translateZ(0);z-index:10000;padding:clamp(10px,3vw,20px) clamp(25px,5vw,50px);border-radius:20px;border:5px solid transparent;background:transparent;opacity:0;display:none;transition:opacity 0.5s}
         @keyframes popupBounce{0%{transform:scale(0.5)translateY(-20px);opacity:0}50%{transform:scale(1.1)translateY(0)}100%{transform:scale(1)translateY(0);opacity:1}}
         @keyframes popupBigWin{0%{transform:scale(0.3)rotate(-10deg);opacity:0}50%{transform:scale(1.2)rotate(5deg)}70%{transform:scale(0.95)rotate(-2deg)}100%{transform:scale(1)rotate(0);opacity:1}}
         #popup.positive,#popup.negative,#popup.bigwin{display:block;opacity:1;box-shadow:0 10px 40px rgba(0,0,0,0.4),inset 0 2px 10px rgba(255,255,255,0.8),inset 0 -2px 10px rgba(0,0,0,0.1);backdrop-filter:blur(10px)}
         #popup.positive{border-color:#28a745;background:linear-gradient(145deg,rgba(144,238,144,0.95),rgba(152,251,152,0.95));text-shadow:2px 2px 4px rgba(0,100,0,0.3);color:#155724}
         #popup.negative{border-color:#dc3545;background:linear-gradient(145deg,rgba(255,182,193,0.95),rgba(255,192,203,0.95));text-shadow:2px 2px 4px rgba(139,0,0,0.3);color:#721c24}
         #popup.bigwin{border-color:#ffd700;background:linear-gradient(145deg,rgba(255,215,0,0.95),rgba(255,237,78,0.95));text-shadow:3px 3px 6px rgba(184,134,11,0.5);color:#1a1a2e;animation:popupBigWin 0.6s ease-out;box-shadow:0 15px 50px rgba(255,215,0,0.6),inset 0 2px 15px rgba(255,255,255,0.9),inset 0 -2px 15px rgba(0,0,0,0.2)}
+        
+        /* ローディング */
         #loading{position:fixed;top:0;left:0;width:100%;height:100%;background:#1a1a2e;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.5s}
         #loading.hidden{opacity:0;pointer-events:none}
-        .loader{font-size:100px;animation:spin 1s linear infinite}
+        .loader{font-size:clamp(60px,15vw,100px);animation:spin 1s linear infinite}
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-        .loading-text{color:#ffd700;font-size:28px;margin-top:20px}
-        @media(max-width:1200px){.container{grid-template-columns:1fr;grid-template-rows:auto auto 1fr auto}.sidebar{grid-row:3}}
-        @media(max-width:768px){.container{padding:15px}.title{font-size:2em}.slot{width:100px;height:100px;font-size:70px;line-height:100px}.btn-spin{font-size:2em;padding:20px 40px}}
+        .loading-text{color:#ffd700;font-size:clamp(18px,4vw,28px);margin-top:20px}
+        
+        /* タブレット・スマホ対応 */
+        @media(max-width:1024px){
+            .main-content{flex-direction:column}
+            .sidebar{flex:1;max-width:100%;max-height:400px}
+        }
+        
+        @media(max-width:768px){
+            body{padding:5px;min-height:100vh;align-items:flex-start}
+            .container{padding:15px;border-radius:15px;margin:0}
+            .header{margin-bottom:15px}
+            .game-area{padding:15px;gap:15px}
+            .slots-container{gap:8px}
+            .sound-controls{top:5px;right:5px;gap:5px}
+            .sound-toggle,.bgm-toggle{padding:6px 10px;font-size:0.75em}
+            .footer{padding:10px;margin-top:15px;font-size:0.7em}
+        }
+        
+        @media(max-width:480px){
+            .title{font-size:1.5em}
+            .money-display{font-size:1.2em;padding:8px 15px}
+            .slot{width:70px;height:70px;font-size:45px;line-height:70px;border-width:3px}
+            .btn-spin{font-size:1.5em;padding:12px 30px}
+            .btn-777{font-size:0.9em;padding:10px 20px}
+            .entry-fee-display{font-size:0.9em;padding:8px 15px}
+            .sidebar{max-height:300px;padding:15px}
+            .sidebar h2{font-size:1.2em}
+            .sidebar-content{font-size:0.85em}
+        }
+        
+        /* 横向きスマホ対応 */
+        @media(max-height:500px) and (orientation:landscape){
+            body{padding:5px}
+            .container{padding:10px}
+            .header{margin-bottom:10px}
+            .title{font-size:1.3em;margin-bottom:5px}
+            .money-display{font-size:1em;padding:6px 12px;margin-top:5px}
+            .game-area{padding:10px;gap:10px}
+            .slot{width:60px;height:60px;font-size:40px;line-height:60px}
+            .btn-spin{font-size:1.2em;padding:8px 20px}
+            .btn-777{font-size:0.8em;padding:6px 15px}
+            .sidebar{max-height:200px;padding:10px}
+            .footer{padding:8px;margin-top:10px}
+        }
     </style>
 </head>
 <body>
@@ -69,8 +135,10 @@
         <div class="loading-text">Loading KAZINO...</div>
     </div>
 
-    <button class="sound-toggle" id="soundToggle">🔊 効果音ON</button>
-    <button class="bgm-toggle" id="bgmToggle">🎵 BGM ON</button>
+    <div class="sound-controls">
+        <button class="sound-toggle" id="soundToggle">🔊 SE</button>
+        <button class="bgm-toggle" id="bgmToggle">🎵 BGM</button>
+    </div>
 
     <div class="container">
         <div class="header">
@@ -78,60 +146,62 @@
             <div class="money-display" id="money-panel">💰 100,000円</div>
         </div>
 
-        <div class="game-area">
-            <div class="slots-container">
-                <div class="slot" id="slot0">7</div>
-                <div class="slot" id="slot1">7</div>
-                <div class="slot" id="slot2">7</div>
+        <div class="main-content">
+            <div class="game-area">
+                <div class="slots-container">
+                    <div class="slot" id="slot0">7</div>
+                    <div class="slot" id="slot1">7</div>
+                    <div class="slot" id="slot2">7</div>
+                </div>
+                
+                <div class="entry-fee-display" id="entry-fee">参加料：10,000円</div>
+                
+                <div class="controls">
+                    <button class="btn-spin" id="btn-spin">押せ!!</button>
+                </div>
+                
+                <button class="btn-777" id="btn-777">🎰 777確定ボタン</button>
             </div>
-            
-            <div class="entry-fee-display" id="entry-fee">参加料：10,000円</div>
-            
-            <div class="controls">
-                <button class="btn-spin" id="btn-spin">押せ!!</button>
-            </div>
-            
-            <button class="btn-777" id="btn-777">🎰 777確定ボタン</button>
-        </div>
 
-        <div class="sidebar">
-            <h2>📋 ゲーム説明</h2>
-            <div class="sidebar-content">
-                <h3>💳 参加料レベル</h3>
-                <ul>
-                    <li><strong>Lv1:</strong> 所持金10万未満 → 1,000円</li>
-                    <li><strong>Lv2:</strong> 所持金10万以上 → 10,000円</li>
-                    <li><strong>Lv3:</strong> 所持金1000万以上 → 100万円</li>
-                    <li><strong>Lv4:</strong> 所持金1億以上 → 1000万円</li>
-                </ul>
+            <div class="sidebar">
+                <h2>📋 ゲーム説明</h2>
+                <div class="sidebar-content">
+                    <h3>💳 参加料レベル</h3>
+                    <ul>
+                        <li><strong>Lv1:</strong> 10万未満 → 1,000円</li>
+                        <li><strong>Lv2:</strong> 10万以上 → 10,000円</li>
+                        <li><strong>Lv3:</strong> 1000万以上 → 100万円</li>
+                        <li><strong>Lv4:</strong> 1億以上 → 1000万円</li>
+                    </ul>
 
-                <h3>🎁 配当</h3>
-                <ul>
-                    <li><strong>大当たり（3つ揃い）:</strong><br>
-                    数字×所持金<br>
-                    ※1の場合は10万円固定</li>
-                    <li><strong>当たり（2つ揃い）:</strong><br>
-                    200円～4,000円</li>
-                    <li><strong>ハズレ:</strong><br>
-                    0円～2,000円</li>
-                </ul>
+                    <h3>🎁 配当</h3>
+                    <ul>
+                        <li><strong>大当たり（3つ揃い）:</strong><br>
+                        数字×所持金<br>
+                        ※1の場合は10万円固定</li>
+                        <li><strong>当たり（2つ揃い）:</strong><br>
+                        200円～4,000円</li>
+                        <li><strong>ハズレ:</strong><br>
+                        0円～2,000円</li>
+                    </ul>
 
-                <h3>🎮 操作方法</h3>
-                <ul>
-                    <li>「押せ!!」ボタンをクリック</li>
-                    <li>スペースキーでスピン</li>
-                    <li>777確定ボタンで必ず777</li>
-                </ul>
+                    <h3>🎮 操作方法</h3>
+                    <ul>
+                        <li>「押せ!!」ボタンをタップ</li>
+                        <li>スペースキーでスピン（PC）</li>
+                        <li>777確定ボタンで必ず777</li>
+                    </ul>
 
-                <h3>💡 特典</h3>
-                <ul>
-                    <li>所持金1000万以上で配当7倍！</li>
-                </ul>
+                    <h3>💡 特典</h3>
+                    <ul>
+                        <li>所持金1000万以上で配当7倍！</li>
+                    </ul>
+                </div>
             </div>
         </div>
 
         <div class="footer">
-            <p>Nadeshiko v1 Slot Game - Web Version | スペースキーでもプレイ可能</p>
+            <p>Nadeshiko v1 Slot Game - Web Version | PC: スペースキーでプレイ</p>
         </div>
     </div>
 
@@ -243,7 +313,7 @@
             el.popup.textContent=text;
             el.popup.style.display='block';
             el.popup.style.opacity='1';
-            el.popup.style.left=(x-200)+'px';
+            el.popup.style.left=(x-el.popup.offsetWidth/2)+'px';
             el.popup.style.top=y+'px';
             el.popup.style.animation=type==='bigwin'?'popupBigWin 0.6s ease-out':'popupBounce 0.5s ease-out';
             
@@ -266,6 +336,7 @@
         // スロット回転
         async function spinAnimation(is777){
             let S=0,T=0,T1=0,T2=0,Text='ゴ',TextC=0;
+            const originalSize=el.btnSpin.style.fontSize;
             el.btnSpin.style.fontSize='1.5em';
             el.slots.forEach(s=>s.classList.add('spinning'));
             
@@ -303,6 +374,7 @@
                     await sleep(200);
                 }
             }
+            el.slots.forEach(s=>s.style.color='#000');
         }
         
         // 結果判定
@@ -352,7 +424,7 @@
             await judgeResult(...results);
             
             await sleep(1000);
-            el.btnSpin.style.fontSize='3em';
+            el.btnSpin.style.fontSize='';
             el.btnSpin.textContent='押せ!!';
             isSpinning=false;
         }
@@ -360,13 +432,13 @@
         // イベント設定
         el.soundToggle.addEventListener('click',()=>{
             soundEnabled=!soundEnabled;
-            el.soundToggle.textContent=soundEnabled?'🔊 効果音ON':'🔇 効果音OFF';
+            el.soundToggle.textContent=soundEnabled?'🔊 SE':'🔇 SE';
             el.soundToggle.classList.toggle('muted');
         });
         
         el.bgmToggle.addEventListener('click',()=>{
             bgmEnabled=!bgmEnabled;
-            el.bgmToggle.textContent=bgmEnabled?'🎵 BGM ON':'🔇 BGM OFF';
+            el.bgmToggle.textContent=bgmEnabled?'🎵 BGM':'🔇 BGM';
             el.bgmToggle.classList.toggle('muted');
             bgmEnabled?startBGM():stopBGM();
         });
@@ -392,6 +464,13 @@
         });
         
         document.addEventListener('keyup',e=>{if(e.code==='Space')keyPressed=false});
+        
+        // タッチ操作の最適化
+        document.addEventListener('touchstart',()=>{
+            if(audioContext.state==='suspended'){
+                audioContext.resume();
+            }
+        },{passive:true});
         
         // 初期化
         window.addEventListener('load',()=>{
